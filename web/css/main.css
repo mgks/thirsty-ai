@@ -1,0 +1,81 @@
+:root {
+    --bg: #0a0a0a;
+    --text: #fff;
+    --accent: #00aaff;
+}
+
+body {
+    margin: 0; overflow: hidden; background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text); touch-action: none;
+}
+
+/* Background Water Level */
+#water-background {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    height: 0%; /* Rising */
+    background: linear-gradient(to top, rgba(0, 100, 255, 0.2), transparent);
+    transition: height 1s ease; z-index: 0;
+    pointer-events: none;
+}
+
+#physics-container { position: absolute; inset: 0; z-index: 1; }
+
+.ui-layer {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none; /* Let touches pass to physics */
+}
+
+/* HEADER */
+header {
+    padding: 20px; display: flex; justify-content: space-between; align-items: flex-start;
+    pointer-events: auto;
+}
+
+.stat-pill {
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+    padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
+    display: flex; gap: 10px; align-items: center;
+}
+.label { font-size: 10px; opacity: 0.7; letter-spacing: 1px; }
+.value { font-weight: 700; color: var(--accent); }
+
+.btn-icon {
+    background: rgba(255,255,255,0.1); border: none; font-size: 20px;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+}
+
+/* GLASS DOCK */
+.dock-container {
+    padding: 15px;
+    pointer-events: auto;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+}
+
+.glass-dock {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    background: rgba(255,255,255,0.05); backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 10px;
+}
+
+.dock-btn {
+    background: transparent; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    transition: transform 0.1s;
+}
+.dock-btn:active { transform: scale(0.9); }
+
+.btn-label { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 500; }
+
+.btn-visual { width: 30px; height: 30px; border-radius: 4px; }
+.drop-icon { background: #00aaff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); margin-top: 5px; width: 20px; height: 20px; }
+.ice-icon { background: #aaddff; border: 1px solid #fff; opacity: 0.8; }
+.bottle-icon { background: #0088cc; height: 35px; width: 15px; border-radius: 4px; }
+.barrel-icon { background: #ff4444; border-radius: 4px; width: 25px; border-top: 2px solid #fff; border-bottom: 2px solid #fff; }
+
+.dock-footer {
+    text-align: center; font-size: 11px; color: #555; margin-top: 10px;
+}
+#clear-btn { text-decoration: underline; cursor: pointer; color: #777; }

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Thirsty AI: Physics Lab</title>
+    <!-- Matter.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <!-- BACKGROUND WATER LEVEL (Rises slowly) -->
+    <div id="water-background"></div>
+
+    <!-- PHYSICS CANVAS -->
+    <div id="physics-container"></div>
+
+    <!-- UI LAYER -->
+    <div class="ui-layer">
+        
+        <!-- TOP STATS -->
+        <header>
+            <div class="stat-pill">
+                <span class="label">WASTE</span>
+                <span class="value" id="display-total">0 ml</span>
+            </div>
+            <button id="btn-gyro" class="btn-icon" title="Enable Gravity">⚖️</button>
+        </header>
+
+        <!-- BOTTOM GLASS DOCK -->
+        <div class="dock-container">
+            <div class="glass-dock">
+                
+                <button class="dock-btn" id="btn-query">
+                    <div class="btn-visual drop-icon"></div>
+                    <span class="btn-label">Chat</span>
+                </button>
+
+                <button class="dock-btn" id="btn-reason">
+                    <div class="btn-visual ice-icon"></div>
+                    <span class="btn-label">Think</span>
+                </button>
+
+                <button class="dock-btn" id="btn-image">
+                    <div class="btn-visual bottle-icon"></div>
+                    <span class="btn-label">Image</span>
+                </button>
+
+                <button class="dock-btn" id="btn-video">
+                    <div class="btn-visual barrel-icon"></div>
+                    <span class="btn-label">Video</span>
+                </button>
+
+            </div>
+            <div class="dock-footer">
+                <span id="item-counter">0 Items</span> • <span id="clear-btn">Clear</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
