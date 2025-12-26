@@ -25,9 +25,9 @@ jobs:
 
       # Note: We skip 'npm ci' in root because this package has no dependencies.
       # If 'core' has dependencies, uncomment this:
-      # - name: Install Core Dependencies
-      #   working-directory: ./core
-      #   run: npm ci
+      - name: Install Core Dependencies
+        working-directory: ./core
+        run: npm ci
 
       - name: Prepare Package (Copy Assets)
         run: |
