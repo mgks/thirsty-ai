@@ -1,217 +1,216 @@
-// --- 1. ASSET GENERATOR (Zero Dependency SVGs) ---
-function createSVGTexture(type, color, w, h) {
-    let svg = '';
-    const half = w / 2;
-    
-    if (type === 'drop') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-            <path d="M${half} 0 Q${w} ${h*0.7} ${half} ${h} Q0 ${h*0.7} ${half} 0" fill="${color}" stroke="white" stroke-width="2"/>
-        </svg>`;
-    } else if (type === 'ice') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
-            <rect x="2" y="2" width="${w-4}" height="${h-4}" fill="${color}" stroke="white" stroke-width="2" rx="4"/>
-            <path d="M5 5 L15 15" stroke="white" stroke-opacity="0.5"/>
-        </svg>`;
-    } else if (type === 'bottle') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
-            <rect x="${w*0.3}" y="0" width="${w*0.4}" height="${h*0.3}" fill="#ccc"/>
-            <rect x="0" y="${h*0.3}" width="${w}" height="${h*0.7}" fill="${color}" rx="5" stroke="white" stroke-width="2"/>
-        </svg>`;
-    } else if (type === 'barrel') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
-            <rect x="0" y="0" width="${w}" height="${h}" fill="${color}" stroke="white" stroke-width="4" rx="5"/>
-            <line x1="0" y1="${h*0.3}" x2="${w}" y2="${h*0.3}" stroke="rgba(0,0,0,0.3)" stroke-width="3"/>
-            <line x1="0" y1="${h*0.7}" x2="${w}" y2="${h*0.7}" stroke="rgba(0,0,0,0.3)" stroke-width="3"/>
-            <path d="M${w*0.3} ${h*0.5} L${w*0.4} ${h*0.4} L${w*0.6} ${h*0.4} L${w*0.5} ${h*0.6} Z" fill="yellow"/>
-        </svg>`;
-    }
+import { ThirstyCalculator } from '../../core/index.js';
+import { FluidBackground } from './background.js';
+import { ICONS } from './icons.js';
 
-    const blob = new Blob([svg], {type: 'image/svg+xml'});
-    return URL.createObjectURL(blob);
-}
+// Init Logic & Background
+const calc = new ThirstyCalculator();
+const bg = new FluidBackground('fluid-canvas');
 
-// Pre-generate textures
-const textures = {
-    drop: createSVGTexture('drop', '#00aaff', 30, 30),
-    ice: createSVGTexture('ice', '#aaddff', 40, 40),
-    bottle: createSVGTexture('bottle', '#0088cc', 30, 60),
-    barrel: createSVGTexture('barrel', '#ff4444', 60, 80)
+// --- STATE ---
+let lastMilestoneUnit = '';
+let lastIconCount = 0;
+
+// Combo System State
+let combo = {
+    count: 0,
+    lastTap: 0,
+    timer: null,
+    multiplier: 1
 };
 
-// --- 2. AUDIO SYNTH (Procedural Sound) ---
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playSound(type) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
+// UI Elements
+const ui = {
+    amt: document.getElementById('amount-display'),
+    iconArea: document.getElementById('icon-area'),
+    text: document.getElementById('comparison-text'),
+    logView: document.getElementById('log-view'),
+    chart: document.getElementById('chart-container'),
+    gyroHint: document.getElementById('gyro-hint'),
+    // Note: Ensure <span id="speed-badge">x1</span> is inside your H1 in HTML
+    speedBadge: document.getElementById('speed-badge') 
+};
 
-    const now = audioCtx.currentTime;
+// --- CORE FUNCTIONS ---
+
+/**
+ * Handles the tap speed and returns the multiplier (x1, x2, x5)
+ */
+function handleCombo() {
+    const now = Date.now();
     
-    if (type === 'drop') {
-        osc.frequency.setValueAtTime(800, now);
-        osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        osc.start(now);
-        osc.stop(now + 0.1);
-    } else if (type === 'heavy') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(100, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
+    // Check if tap is "continuous" (within 500ms)
+    if (now - combo.lastTap < 500) {
+        combo.count++;
+    } else {
+        combo.count = 1; // Reset
     }
+    
+    combo.lastTap = now;
+    clearTimeout(combo.timer);
+
+    // Determine Multiplier
+    if (combo.count > 15) combo.multiplier = 5;
+    else if (combo.count > 5) combo.multiplier = 2;
+    else combo.multiplier = 1;
+
+    // Update Badge UI
+    if (combo.multiplier > 1 && ui.speedBadge) {
+        ui.speedBadge.textContent = `x${combo.multiplier}`;
+        ui.speedBadge.classList.add('visible'); // CSS class to show it
+    } else if (ui.speedBadge) {
+        ui.speedBadge.classList.remove('visible');
+    }
+
+    // Reset Timer: If no tap for 1 second, reset combo
+    combo.timer = setTimeout(() => {
+        combo.count = 0;
+        combo.multiplier = 1;
+        if(ui.speedBadge) ui.speedBadge.classList.remove('visible');
+    }, 1000);
+
+    return combo.multiplier;
 }
 
-// --- 3. PHYSICS ENGINE ---
-const { Engine, Render, Runner, Bodies, Composite, Events, Mouse, MouseConstraint, Body } = Matter;
+/**
+ * Main Update Loop
+ */
+function updateUI() {
+    const stats = calc.getStats();
 
-const engine = Engine.create();
-const world = engine.world;
-const render = Render.create({
-    element: document.getElementById('physics-container'),
-    engine: engine,
-    options: {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        background: 'transparent',
-        wireframes: false
+    // 1. Amount Display
+    if (stats.ml >= 1000) {
+        ui.amt.innerHTML = `${stats.liters}<span class="unit">L</span>`;
+        // Re-append badge because innerHTML wipes it
+        if(ui.speedBadge) ui.amt.appendChild(ui.speedBadge);
+    } else {
+        ui.amt.innerHTML = `${stats.ml}<span class="unit">ml</span>`;
+        if(ui.speedBadge) ui.amt.appendChild(ui.speedBadge);
     }
-});
 
-// Walls
-const wallOpts = { isStatic: true, render: { visible: false } };
-const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 60, window.innerWidth, 120, wallOpts);
-const leftW = Bodies.rectangle(-60, window.innerHeight/2, 120, window.innerHeight, wallOpts);
-const rightW = Bodies.rectangle(window.innerWidth+60, window.innerHeight/2, 120, window.innerHeight, wallOpts);
-Composite.add(world, [ground, leftW, rightW]);
+    // 2. Shock Text
+    // Logic is now inside the Core Package
+    const newFact = calc.getShockFact(); 
+    if (newFact) {
+        // Fade effect
+        ui.text.style.opacity = 0;
+        setTimeout(() => {
+            ui.text.innerHTML = newFact;
+            ui.text.style.opacity = 1;
+        }, 200);
+    }
 
-// Mouse Control (Drag items)
-const mouse = Mouse.create(render.canvas);
-const mConstraint = MouseConstraint.create(engine, {
-    mouse: mouse,
-    constraint: { stiffness: 0.1, render: { visible: false } }
-});
-Composite.add(world, mConstraint);
+    // 3. Multi-Icon Logic
+    const newUnit = stats.milestone.unit;
+    let newCount = Math.floor(stats.ml / stats.milestone.limit);
+    
+    // Visual Caps
+    if (newCount < 1) newCount = 1; 
+    if (newCount > 6) newCount = 6; 
 
-// Collision Sound
-Events.on(engine, 'collisionStart', (event) => {
-    const pairs = event.pairs;
-    pairs.forEach((pair) => {
-        // Only play sound if impact velocity is high enough
-        const speed = pair.collision.normal.x * (pair.bodyA.velocity.x - pair.bodyB.velocity.x) + 
-                      pair.collision.normal.y * (pair.bodyA.velocity.y - pair.bodyB.velocity.y);
-        
-        if (Math.abs(speed) > 5) { // Threshold
-             // Heavier objects make deeper sounds
-             const mass = pair.bodyA.mass + pair.bodyB.mass;
-             playSound(mass > 2 ? 'heavy' : 'drop');
+    // If unit changed (e.g. Glass -> Bottle), clear everything
+    if (newUnit !== lastMilestoneUnit) {
+        ui.iconArea.innerHTML = '';
+        lastIconCount = 0;
+        lastMilestoneUnit = newUnit;
+    }
+
+    // Only append icons if count INCREASED
+    if (newCount > lastIconCount) {
+        const diff = newCount - lastIconCount;
+        for (let i = 0; i < diff; i++) {
+            const span = document.createElement('span');
+            span.className = 'milestone-svg pop-in'; // Add animation class
+            span.innerHTML = ICONS[stats.milestone.icon];
+            ui.iconArea.appendChild(span);
         }
+        lastIconCount = newCount;
+    }
+
+    // 4. Fluid Background Fill
+    bg.setFill(stats.fillPercentage);
+}
+
+// --- EVENT LISTENERS ---
+
+// Control Buttons
+document.querySelectorAll('.control-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const mult = handleCombo(); // Get speed multiplier
+        calc.add(btn.dataset.type, mult);
+        updateUI();
+        if(navigator.vibrate) navigator.vibrate(10); // Haptic
     });
 });
 
-Render.run(render);
-Runner.run(Runner.create(), engine);
-
-// --- 4. GAME LOGIC ---
-let totalMl = 0;
-let itemCount = 0;
-
-function spawn(type) {
-    let body;
-    const x = Math.random() * (window.innerWidth - 100) + 50;
-    const y = -50;
-    const common = { restitution: 0.3, friction: 0.5 };
-
-    if (type === 'drop') {
-        body = Bodies.circle(x, y, 15, { ...common, render: { sprite: { texture: textures.drop, xScale:1, yScale:1 } } });
-        totalMl += 15;
-    } else if (type === 'ice') {
-        body = Bodies.rectangle(x, y, 40, 40, { ...common, render: { sprite: { texture: textures.ice, xScale:1, yScale:1 } } });
-        totalMl += 75;
-    } else if (type === 'bottle') {
-        body = Bodies.rectangle(x, y, 30, 60, { ...common, render: { sprite: { texture: textures.bottle, xScale:1, yScale:1 } } });
-        totalMl += 500;
-    } else if (type === 'barrel') {
-        body = Bodies.rectangle(x, y, 60, 80, { ...common, density: 0.05, render: { sprite: { texture: textures.barrel, xScale:1, yScale:1 } } });
-        totalMl += 2500;
-    }
-
-    Composite.add(world, body);
-    itemCount++;
-    
-    // UI Update
+// Reset
+document.getElementById('btn-reset').addEventListener('click', () => {
+    calc.reset();
+    lastIconCount = 0;
+    lastMilestoneUnit = '';
+    ui.iconArea.innerHTML = '';
     updateUI();
-    
-    // Haptics
-    if(navigator.vibrate) navigator.vibrate(5);
-}
+});
 
-function updateUI() {
-    let val = totalMl;
-    let unit = "ml";
-    if (val >= 1000) { val = (val/1000).toFixed(2); unit = "L"; }
-    
-    document.getElementById('display-total').textContent = `${val} ${unit}`;
-    document.getElementById('item-counter').textContent = `${itemCount} Items`;
-    
-    // Background Water Rise
-    const maxMl = 20000; // Cap visual background at 20L
-    const pct = Math.min((totalMl / maxMl) * 100, 100);
-    document.getElementById('water-background').style.height = `${pct}%`;
-}
-
-// --- 5. MOBILE GYROSCOPE ---
-const btnGyro = document.getElementById('btn-gyro');
-
-function handleMotion(event) {
-    const x = event.accelerationIncludingGravity.x;
-    const y = event.accelerationIncludingGravity.y;
-    // Map to Matter.js gravity
-    engine.gravity.x = x / 5;
-    engine.gravity.y = -y / 5;
-}
-
-btnGyro.addEventListener('click', () => {
-    // iOS requires permission request
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission()
+// Gyro Permission (iOS)
+ui.amt.addEventListener('click', () => {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
             .then(response => {
                 if (response === 'granted') {
-                    window.addEventListener('devicemotion', handleMotion);
-                    btnGyro.style.color = '#00ff00';
+                    if(ui.gyroHint) ui.gyroHint.style.opacity = '0';
+                    bg.setupGyro();
                 }
             })
             .catch(console.error);
     } else {
-        // Android/Non-iOS
-        window.addEventListener('devicemotion', handleMotion);
-        btnGyro.style.color = '#00ff00';
+        bg.setupGyro();
     }
 });
 
-// Controls
-document.getElementById('btn-query').addEventListener('click', () => spawn('drop'));
-document.getElementById('btn-reason').addEventListener('click', () => spawn('ice'));
-document.getElementById('btn-image').addEventListener('click', () => spawn('bottle'));
-document.getElementById('btn-video').addEventListener('click', () => spawn('barrel'));
-
-document.getElementById('clear-btn').addEventListener('click', () => {
-    const bodies = Composite.allBodies(world).filter(b => !b.isStatic);
-    Composite.remove(world, bodies);
-    totalMl = 0; itemCount = 0;
-    updateUI();
+// Log View Handling
+document.getElementById('btn-log').addEventListener('click', () => {
+    ui.logView.classList.remove('hidden');
+    // Tiny delay to allow display:block to apply before adding active class for transition
+    setTimeout(() => ui.logView.classList.add('active'), 10);
+    renderChart();
 });
 
-// Resize
-window.addEventListener('resize', () => {
-    render.canvas.width = window.innerWidth;
-    render.canvas.height = window.innerHeight;
-    Body.setPosition(ground, { x: window.innerWidth/2, y: window.innerHeight + 60 });
-    Body.setPosition(rightW, { x: window.innerWidth + 60, y: window.innerHeight/2 });
+document.getElementById('close-log').addEventListener('click', () => {
+    ui.logView.classList.remove('active');
+    setTimeout(() => ui.logView.classList.add('hidden'), 400); // Wait for transition
 });
+
+/**
+ * Renders the simple CSS bar chart
+ */
+function renderChart() {
+    // Mock History (In a real app, load this from localStorage)
+    // We append current session stats at the end
+    const history = [150, 400, 2500, 1000, 50, 7500, calc.getStats().ml];
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'Today'];
+    
+    // Calculate Max for scaling
+    const max = Math.max(...history, 500); 
+
+    ui.chart.innerHTML = ''; // Clear previous
+    
+    history.forEach((val, i) => {
+        const h = (val / max) * 100;
+        // Ensure even 0 values have a tiny line so graph looks complete
+        const finalH = h < 2 ? 2 : h; 
+        
+        const bar = document.createElement('div');
+        bar.className = 'chart-bar' + (i === 6 ? ' today' : '');
+        
+        // Use requestAnimationFrame to trigger the height animation
+        requestAnimationFrame(() => {
+            bar.style.height = `${finalH}%`;
+        });
+
+        bar.innerHTML = `<span class="bar-date">${days[i]}</span>`;
+        ui.chart.appendChild(bar);
+    });
+}
+
+// Start
+updateUI();

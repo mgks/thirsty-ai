@@ -3,62 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Thirsty AI: Physics Lab</title>
-    <!-- Matter.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <title>Thirsty AI</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
-    <!-- BACKGROUND WATER LEVEL (Rises slowly) -->
-    <div id="water-background"></div>
+    <!-- FLUID BACKGROUND -->
+    <canvas id="fluid-canvas"></canvas>
+    <div id="vignette-overlay"></div>
 
-    <!-- PHYSICS CANVAS -->
-    <div id="physics-container"></div>
-
-    <!-- UI LAYER -->
-    <div class="ui-layer">
+    <!-- MAIN UI -->
+    <main id="app-view">
         
-        <!-- TOP STATS -->
+        <!-- TOP NAV -->
+        <nav>
+            <button id="btn-reset" class="nav-btn" aria-label="Reset">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+            </button>
+            <button id="btn-log" class="nav-btn" aria-label="History">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+            </button>
+        </nav>
+
+        <!-- CENTER DISPLAY -->
+        <section class="display-area">
+            <!-- Click here for Gyro -->
+            <div style="cursor: pointer;">
+                <h1 id="amount-display">0<span class="unit">ml</span></h1>
+                <span id="speed-badge">x1</span>
+                <div id="gyro-hint">(Tap to Enable Physics)</div>
+            </div>
+            
+            <div class="comparison-box">
+                <div id="icon-area"></div>
+                <p id="comparison-text">Begin typing...</p>
+            </div>
+        </section>
+
+        <!-- CONTROLS -->
+        <section class="controls-grid">
+            <button class="control-btn" data-type="query">
+                <span class="btn-title">Chat</span>
+                <span class="btn-sub">15ml</span>
+            </button>
+            <button class="control-btn" data-type="reason">
+                <span class="btn-title">Think</span>
+                <span class="btn-sub">75ml</span>
+            </button>
+            <button class="control-btn" data-type="image">
+                <span class="btn-title">Image</span>
+                <span class="btn-sub">500ml</span>
+            </button>
+            <button class="control-btn" data-type="video">
+                <span class="btn-title">Video</span>
+                <span class="btn-sub">2.5L</span>
+            </button>
+        </section>
+
+    </main>
+
+    <!-- LOG VIEW (Hidden) -->
+    <aside id="log-view" class="hidden">
         <header>
-            <div class="stat-pill">
-                <span class="label">WASTE</span>
-                <span class="value" id="display-total">0 ml</span>
-            </div>
-            <button id="btn-gyro" class="btn-icon" title="Enable Gravity">⚖️</button>
+            <h2>Your Water Footprint</h2>
+            <button id="close-log" class="nav-btn"><svg width="20" height="20" viewBox="-0.156 0 7.813 7.813" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#fff"><g stroke-width="0"/><g stroke-linecap="round" stroke-linejoin="round"/><path d="m.938 6.662 5.625-5.625m-5.625 0 5.625 5.625" stroke-width=".625" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </header>
-
-        <!-- BOTTOM GLASS DOCK -->
-        <div class="dock-container">
-            <div class="glass-dock">
-                
-                <button class="dock-btn" id="btn-query">
-                    <div class="btn-visual drop-icon"></div>
-                    <span class="btn-label">Chat</span>
-                </button>
-
-                <button class="dock-btn" id="btn-reason">
-                    <div class="btn-visual ice-icon"></div>
-                    <span class="btn-label">Think</span>
-                </button>
-
-                <button class="dock-btn" id="btn-image">
-                    <div class="btn-visual bottle-icon"></div>
-                    <span class="btn-label">Image</span>
-                </button>
-
-                <button class="dock-btn" id="btn-video">
-                    <div class="btn-visual barrel-icon"></div>
-                    <span class="btn-label">Video</span>
-                </button>
-
+        
+        <div class="log-content">
+            <div id="chart-container">
+                <!-- CSS Bars go here -->
             </div>
-            <div class="dock-footer">
-                <span id="item-counter">0 Items</span> • <span id="clear-btn">Clear</span>
+            
+            <div class="log-info">
+                <p>Calculations based on <strong>Scope 1 (Direct Cooling)</strong> and <strong>Scope 2 (Energy Generation)</strong> water consumption reports from UC Riverside (2023) and Microsoft Environmental Reports (2024).</p>
+                <div class="links">
+                    <a href="#" target="_blank">Read Study</a>
+                    <a href="#" target="_blank">Source Code</a>
+                </div>
             </div>
         </div>
-
-    </div>
+        <div class="log-footer">
+            <h4>Thirsty AI Open Source Project</h4>
+            <div class="brand-icons">
+                <!-- GitHub -->
+                <a href="#" target="_blank"><svg width="24" height="24" viewBox="0 0 7.5 7.5" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"/><g stroke-linecap="round" stroke-linejoin="round"/><title>github [#142]</title><path d="M3.75 0C5.821 0 7.5 1.721 7.5 3.845c0 1.698-1.073 3.139-2.562 3.648-.19.038-.258-.082-.258-.184 0-.127.005-.541.005-1.055 0-.358-.12-.593-.255-.712.835-.095 1.713-.42 1.713-1.897 0-.42-.146-.763-.386-1.032.039-.097.168-.488-.037-1.018 0 0-.314-.103-1.03.394a3.5 3.5 0 0 0-.94-.13 3.5 3.5 0 0 0-.939.129c-.716-.497-1.031-.393-1.031-.393-.204.529-.075.921-.036 1.018-.24.269-.386.612-.386 1.032 0 1.473.876 1.803 1.708 1.9-.107.096-.204.265-.238.514-.214.098-.757.268-1.091-.32 0 0-.198-.369-.575-.396 0 0-.366-.005-.026.234 0 0 .246.118.416.563 0 0 .22.686 1.263.454l.005.716c0 .102-.069.22-.256.185C1.074 6.985 0 5.544 0 3.845 0 1.721 1.679 0 3.75 0" fill-rule="evenodd"/></svg></a>
+                <!-- NPM -->
+                <a href="#" target="_blank"><svg width="24" height="24" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"/><g stroke-linecap="round" stroke-linejoin="round"/><g fill="none" fill-rule="evenodd"><path fill="#d40001" d="M0 0h9v9H0z"/><path fill="#fff" d="M6.269 2.973H4.577v4.621H1.5V1.125h6v6.468H6.269z"/></g></svg></a>
+            </div>
+        </div>
+    </aside>
 
     <script type="module" src="js/app.js"></script>
 </body>
