@@ -1,6 +1,6 @@
 # thirsty-ai
 
-> **"AI isn't magic. It drinks."**
+**"AI isn't magic. It drinks."**
 
 **Thirsty AI** is a minimalist, open-source project designed to visualize the hidden environmental cost of modern Artificial Intelligence. It calculates the water consumption (Scope 1 Cooling + Scope 2 Energy Generation) of LLM queries and media generation.
 
@@ -27,7 +27,7 @@ The web interface features a fluid WebGL background that reacts to device orient
 ### Development
 ```bash
 # Clone
-git clone https://github.com/yourusername/thirsty-ai.git
+git clone https://github.com/mgks/thirsty-ai.git
 
 # Run Local Server
 npx http-server .
