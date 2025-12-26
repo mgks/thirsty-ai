@@ -3,13 +3,13 @@ export class FluidBackground {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
         
-        // Physics Configuration
+        // Physics Configuration (Tuned for Water)
         this.conf = {
-            tension: 0.015,     // Softness
-            dampening: 0.04,    // Stability
-            spread: 0.25,       // Wave speed
+            tension: 0.025,     // Higher = Snappier (Water tension)
+            dampening: 0.015,   // Lower = More sloshing (Less friction)
+            spread: 0.3,        // Higher = Faster ripples
             ambientWave: 10,    // PC: Base wave height
-            waveSpeed: 0.1      // PC: Animation speed
+            waveSpeed: 0.15     // PC: Faster animation
         };
 
         // State
@@ -21,7 +21,7 @@ export class FluidBackground {
 
         // Springs
         this.springs = [];
-        this.numSprings = 50; 
+        this.numSprings = 60; // Increased resolution for smoother waves
         this.initSprings();
 
         // Setup
@@ -47,7 +47,6 @@ export class FluidBackground {
     }
 
     setFill(percent) {
-        // Map 0-100% to 5-100% (Always visible)
         if (percent <= 0) this.fillPct = 0;
         else this.fillPct = 0.05 + (percent / 100) * 0.95;
     }
@@ -58,21 +57,18 @@ export class FluidBackground {
                 const ag = e.accelerationIncludingGravity;
                 if (!ag) return;
 
-                // --- THE GRAVITY FIX ---
-                // We use standard (x, y) mapping now. 
-                // x is lateral tilt, y is vertical tilt.
+                // --- GRAVITY FIX ---
                 const x = ag.x || 0;
                 const y = ag.y || 0;
                 
-                // Math.atan2(y, x) gives the angle.
-                // We subtract Math.PI / 2 (90deg) to align "0" with the top of the device.
-                // This ensures +Y (Gravity) points Down on the canvas.
-                let angle = Math.atan2(y, x) - (Math.PI / 2);
+                // Keep the working "Flip" logic
+                let angle = Math.atan2(x, y) + Math.PI;
 
                 // Splash Logic
                 if (e.acceleration) {
                     const shake = Math.abs(e.acceleration.x) + Math.abs(e.acceleration.y);
-                    if (shake > 10) this.splash(shake * 2);
+                    // More sensitive splash for water feel
+                    if (shake > 8) this.splash(shake * 2.5);
                 }
 
                 this.tilt = angle;
@@ -82,7 +78,8 @@ export class FluidBackground {
 
     splash(force) {
         const index = Math.floor(Math.random() * this.numSprings);
-        const safeForce = Math.min(force, 60); 
+        // Allow higher force limit for water splashes
+        const safeForce = Math.min(force, 100); 
         if (this.springs[index]) this.springs[index].v += safeForce;
     }
 
@@ -96,29 +93,28 @@ export class FluidBackground {
         let diff = this.tilt - this.currentTilt;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        this.currentTilt += diff * 0.05;
+        this.currentTilt += diff * 0.1; // Snappier rotation for water
 
-        // 3. Spring Physics (PC Waves Preserved)
+        // 3. Springs
         for (let i = 0; i < this.numSprings; i++) {
             const spring = this.springs[i];
             
-            // The "Rolling" wave effect for PC
+            // Faster ambient waves
             const wave1 = Math.sin(this.time + i * 0.2) * this.conf.ambientWave;
             const wave2 = Math.cos(this.time * 0.7 + i * 0.1) * (this.conf.ambientWave * 0.6);
             
             const targetPos = wave1 + wave2;
             const extension = spring.p - targetPos;
             const acceleration = -this.conf.tension * extension - this.conf.dampening * spring.v;
-            
             spring.v += acceleration;
             spring.p += spring.v;
         }
 
-        // 4. Wave Spread
+        // 4. Spread (Run 4 passes for very fast wave propagation)
         const left = new Array(this.numSprings).fill(0);
         const right = new Array(this.numSprings).fill(0);
 
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < 4; j++) {
             for (let i = 0; i < this.numSprings; i++) {
                 if (i > 0) {
                     left[i] = this.conf.spread * (this.springs[i].p - this.springs[i-1].p);
@@ -143,18 +139,14 @@ export class FluidBackground {
         ctx.clearRect(0, 0, width, height);
         ctx.save();
 
-        // 1. Center
         ctx.translate(width / 2, height / 2);
         
-        // 2. Rotate (Negative tilt to match canvas coord system)
-        ctx.rotate(-this.currentTilt);
+        // Rotation
+        ctx.rotate(this.currentTilt);
 
-        // 3. Calculate Water Level
-        // Using screenHeight ensures 50% is actually 50% of the screen
-        const screenHeight = height; 
-        const waterY = (screenHeight / 2) - (this.currentFill * screenHeight);
+        // Water Level
+        const waterY = (diag / 2) - (this.currentFill * diag);
 
-        // 4. Draw
         ctx.beginPath();
         const startX = -diag / 2;
         const step = diag / this.numSprings;
@@ -167,12 +159,11 @@ export class FluidBackground {
             ctx.lineTo(x, y);
         }
 
-        // Close shape (Deep Bottom)
-        ctx.lineTo(diag / 2, diag);
-        ctx.lineTo(-diag / 2, diag);
+        ctx.lineTo(diag / 2, diag / 2);   // Bottom Right
+        ctx.lineTo(-diag / 2, diag / 2);  // Bottom Left
         ctx.closePath();
 
-        // 5. Colors
+        // Colors
         let color = '#3b82f6'; 
         if (this.currentFill > 0.75) color = '#ef4444';
         else if (this.currentFill > 0.25) color = '#8b5cf6';
