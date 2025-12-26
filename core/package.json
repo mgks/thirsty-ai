@@ -1,6 +1,6 @@
 {
   "name": "thirsty-ai",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Calculate the real-world water consumption footprint of AI interactions.",
   "main": "index.js",
   "types": "index.d.ts",
