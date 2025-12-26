@@ -4,6 +4,11 @@
 
 **Thirsty AI** is a minimalist, open-source project designed to visualize the hidden environmental cost of modern Artificial Intelligence. It calculates the water consumption (Scope 1 Cooling + Scope 2 Energy Generation) of LLM queries and media generation.
 
+<a href="https://www.npmjs.com/package/thirsty-ai"><img src="https://img.shields.io/npm/v/thirsty-ai.svg?style=flat-square&color=007acc" alt="npm version"></a>
+<a href="https://www.npmjs.com/package/thirsty-ai"><img src="https://img.shields.io/npm/dt/thirsty-ai.svg?style=flat-square&color=success" alt="npm downloads"></a>
+<a href="https://github.com/mgks/thirsty-ai/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mgks/thirsty-ai.svg?style=flat-square&color=blue" alt="license"></a>
+<a href="https://github.com/mgks/thirsty-ai/stargazers"><img src="https://img.shields.io/github/stars/mgks/thirsty-ai?style=flat-square&logo=github" alt="stars"></a>
+
 ## 🧪 The Science
 
 Calculations are based on 2024/2025 environmental reports (UC Riverside / Microsoft).
