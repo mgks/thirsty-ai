@@ -1,50 +1,47 @@
-export const AI_COSTS = {
-    QUERY_STANDARD: 15,
-    QUERY_REASONING: 75,
-    MEDIA_GENERATION: 500
+export const COSTS = {
+    QUERY: 15,
+    REASON: 150,
+    IMAGE: 500,
+    VIDEO: 3000
 };
 
-// "Holes" are cut out of a 100x100 box.
-// The box definition: M0,0 H100 V100 H0 Z
-const BOX = "M0,0 H100 V100 H0 Z";
-
-export const CONTAINERS = [
-    {
-        id: 'glass',
-        name: 'Water Glass',
-        capacity: 250,
-        // Visual: A tapered glass centered in the screen
-        // Hole: Start at 30,10 -> 70,10 -> 65,90 -> 35,90
-        hole: "M30,20 L70,20 L65,85 H35 L30,20 Z",
-        outline: "M30,20 L70,20 L65,85 H35 L30,20 Z"
-    },
-    {
-        id: 'bottle',
-        name: 'Plastic Bottle',
-        capacity: 1000,
-        // Visual: Narrow neck, wider body
-        hole: "M42,10 H58 V25 H70 V90 H30 V25 H42 Z",
-        outline: "M42,10 H58 V25 H70 V90 H30 V25 H42 Z"
-    },
-    {
-        id: 'bucket',
-        name: 'Wash Bucket',
-        capacity: 10000,
-        // Visual: Wide bucket
-        hole: "M20,20 L80,20 L75,90 H25 L20,20 Z",
-        outline: "M20,20 L80,20 L75,90 H25 L20,20 Z"
-    }
+export const MILESTONES = [
+    { limit: 300, unit: 'Glass', icon: 'glass' },
+    { limit: 1000, unit: 'Bottle', icon: 'bottle' },
+    { limit: 10000, unit: 'Bucket', icon: 'bucket' },
+    { limit: 150000, unit: 'Bathtub', icon: 'bath' },
+    { limit: 2500000, unit: 'Olympic Pool', icon: 'pool' }
 ];
 
-// Helper to generate the "Inverted" path string for the overlay
-export function getInvertedPath(containerIndex) {
-    return `${BOX} ${CONTAINERS[containerIndex].hole}`;
-}
-
-// IMPACT_LEVELS
-export const IMPACT_LEVELS = [
-    { threshold: 200, title: "Micro-Thirst", desc: "Enough to grow a few coffee beans." },
-    { threshold: 1000, title: "Dehydration Unit", desc: "Daily clean water ration for a child in a conflict zone." },
-    { threshold: 4000, title: "Agricultural Cost", desc: "Water required to grow ONE almond." },
-    { threshold: 15000, title: "Survival Threshold", desc: "WHO minimum for human survival for one week." }
-];
+// Key: Limit in ml. Value: Array of possible facts to pick randomly.
+export const SHOCK_FACTS = {
+    0: [
+        "Every query evaporates clean water. It doesn't come back.",
+        "Data centers run on fresh, potable water. We drink what's left."
+    ],
+    300: [
+        "In 2025, over 2 billion people lack access to this much safe drinking water.",
+        "You evaporated a glass of water while a child in a conflict zone waits for a community tap.",
+        "Clean water is a luxury. AI treats it like a waste product."
+    ],
+    1000: [
+        "This aquifer water is gone forever. Corporate hydration > Human hydration.",
+        "One Liter. Enough to keep a human alive for 6 hours in extreme heat. Wasted on digital noise.",
+        "Big Tech burns millions of liters daily. You just contributed."
+    ],
+    5000: [
+        "Agricultural scarcity is real. AI water consumption is outpacing local regeneration.",
+        "Farmers are losing water rights to Data Centers. Think about that.",
+        "This much water could have grown food. Instead, it generated pixels."
+    ],
+    15000: [
+        "15 Liters. The absolute minimum weekly hygiene ration for a refugee.",
+        "Entire villages subsist on less water than you just burned.",
+        "This isn't 'virtual' waste. It's physical steam leaving a drought-stricken town."
+    ],
+    50000: [
+        "You are now competing with a small town's water supply.",
+        "Groundwater depletion is permanent. There is no Ctrl+Z for this.",
+        "Imagine pulling the plug on a reservoir. That is what this usage looks like."
+    ]
+};

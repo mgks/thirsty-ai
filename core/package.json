@@ -1,0 +1,43 @@
+{
+  "name": "thirsty-ai",
+  "version": "1.0.0",
+  "description": "Calculate the real-world water consumption footprint of AI interactions.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai",
+    "carbon-footprint",
+    "water-usage",
+    "energy-usage",
+    "sustainability",
+    "waste",
+    "environment",
+    "calculator",
+    "gpt",
+    "openai",
+    "google",
+    "llm",
+    "cost"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": {
+    "name": "mgks",
+    "url": "https://mgks.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mgks/thirsty-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mgks/thirsty-ai/issues"
+  },
+  "homepage": "https://github.com/mgks/thirsty-ai#readme",
+  "funding": "https://github.com/sponsors/mgks",
+  "license": "MIT"
+}
