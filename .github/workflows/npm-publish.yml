@@ -23,11 +23,17 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Ensure recent npm
+        run: npm install -g npm@latest
+      
       # Note: We skip 'npm ci' in root because this package has no dependencies.
       # If 'core' has dependencies, uncomment this:
       - name: Install Core Dependencies
         working-directory: ./core
         run: npm ci
+
+      - name: Run tests (optional)
+        run: npm test --if-present
 
       - name: Prepare Package (Copy Assets)
         run: |
