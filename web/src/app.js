@@ -10,6 +10,14 @@ const bg = new FluidBackground('fluid-canvas');
 let lastMilestoneUnit = '';
 let lastIconCount = 0;
 
+// Track counts per type
+let counts = {
+    query: 0,
+    reason: 0,
+    image: 0,
+    video: 0
+};
+
 // Combo System State
 let combo = {
     count: 0,
@@ -26,9 +34,40 @@ const ui = {
     logView: document.getElementById('log-view'),
     chart: document.getElementById('chart-container'),
     gyroHint: document.getElementById('gyro-hint'),
-    // Note: Ensure <span id="speed-badge">x1</span> is inside your H1 in HTML
-    speedBadge: document.getElementById('speed-badge') 
+    speedBadge: document.getElementById('speed-badge'),
+    
+    // Badges Map
+    badges: {
+        query: document.getElementById('badge-query'),
+        reason: document.getElementById('badge-reason'),
+        image: document.getElementById('badge-image'),
+        video: document.getElementById('badge-video')
+    }
 };
+
+// --- LOGIC HELPER ---
+
+function updateBadge(type, amountAdded) {
+    counts[type] += amountAdded;
+    
+    const badge = ui.badges[type];
+    if (badge) {
+        badge.textContent = `${counts[type]}`;
+        badge.classList.add('visible');
+    }
+}
+
+function clearBadges() {
+    // Reset counts
+    counts = { query: 0, reason: 0, image: 0, video: 0 };
+    
+    // Hide UI
+    Object.values(ui.badges).forEach(b => {
+        b.classList.remove('visible');
+        // Optional: Reset text after fade out
+        setTimeout(() => b.textContent = '0', 300);
+    });
+}
 
 // --- CORE FUNCTIONS ---
 
@@ -135,10 +174,12 @@ function updateUI() {
 // Control Buttons
 document.querySelectorAll('.control-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        const mult = handleCombo(); // Get speed multiplier
-        calc.add(btn.dataset.type, mult);
+        const type = btn.dataset.type;
+        const mult = handleCombo();
+        calc.add(type, mult);
+        updateBadge(type, mult);        
         updateUI();
-        if(navigator.vibrate) navigator.vibrate(10); // Haptic
+        if(navigator.vibrate) navigator.vibrate(10);
     });
 });
 
@@ -148,6 +189,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     lastIconCount = 0;
     lastMilestoneUnit = '';
     ui.iconArea.innerHTML = '';
+    clearBadges();
     updateUI();
 });
 
