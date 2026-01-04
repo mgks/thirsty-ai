@@ -2,14 +2,16 @@
 
 **"AI isn't magic. It drinks."**
 
+<p>
+  <img src="https://img.shields.io/npm/v/thirsty-ai.svg?style=flat-square&color=d25353" alt="npm version">
+  <img src="https://img.shields.io/bundlephobia/minzip/thirsty-ai?style=flat-square&color=38bd24" alt="size">
+  <img src="https://img.shields.io/npm/dt/thirsty-ai.svg?style=flat-square&color=success&color=38bd24" alt="npm downloads">
+  <img src="https://img.shields.io/github/license/mgks/thirsty-ai.svg?style=flat-square&color=blue" alt="license">
+</p>
+
 **Thirsty AI** is a minimalist, open-source project designed to visualize the hidden environmental cost of modern Artificial Intelligence. It calculates the water consumption (Scope 1 Cooling + Scope 2 Energy Generation) of LLM queries and media generation.
 
-<a href="https://www.npmjs.com/package/thirsty-ai"><img src="https://img.shields.io/npm/v/thirsty-ai.svg?style=flat-square&color=007acc" alt="npm version"></a>
-<a href="https://www.npmjs.com/package/thirsty-ai"><img src="https://img.shields.io/npm/dt/thirsty-ai.svg?style=flat-square&color=success" alt="npm downloads"></a>
-<a href="https://github.com/mgks/thirsty-ai/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mgks/thirsty-ai.svg?style=flat-square&color=blue" alt="license"></a>
-<a href="https://github.com/mgks/thirsty-ai/stargazers"><img src="https://img.shields.io/github/stars/mgks/thirsty-ai?style=flat-square&logo=github" alt="stars"></a>
-
-## 🧪 The Science
+## The Science
 
 Calculations are based on 2024/2025 environmental reports (UC Riverside / Microsoft).
 
@@ -23,9 +25,7 @@ Calculations are based on 2024/2025 environmental reports (UC Riverside / Micros
 **Why "Waste"?**
 The water used to cool Data Center GPUs evaporates into the atmosphere. It is removed from the local watershed and does not return to the ground immediately.
 
----
-
-## 💻 Web Application
+## Web App
 
 The web interface features a fluid WebGL background that reacts to device orientation (Gyroscope) and visualizes the water level rising in real-time.
 
@@ -38,9 +38,7 @@ git clone https://github.com/mgks/thirsty-ai.git
 npx http-server .
 ```
 
----
-
-## 📦 NPM Package (`thirsty-ai`)
+## NPM Package (`thirsty-ai`)
 
 The core logic is available as a zero-dependency package for developers.
 
@@ -70,7 +68,7 @@ console.log(calc.getShockFact());
 // Output: "One Liter. The amount required to keep a human alive for 8 hours..."
 ```
 
-## 📄 License
+## License
 
 MIT
 
